@@ -114,7 +114,15 @@ function checkMerge(fruit, otherFruit){
     return false;
 }
 
-function mouseClicked(event) {
+/*function mouseClicked(event) {
+    console.log(event)
+    wakeFruit()
+    processFruit()
+    sleep(1500).then(()=>{resetFruit();});
+}*/
+
+function touchEnded(event) {
+    console.log(event)
     wakeFruit()
     processFruit()
     sleep(1500).then(()=>{resetFruit();});
