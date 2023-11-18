@@ -60,13 +60,12 @@ function setup() {
     death_wall.w = width - 10
     death_wall.h = 5;
     death_wall.collider = 'static'
-    death_wall.y = 30;
+    death_wall.y = 150;
 
     activeFruit = createFruit(fruitObjs['cherries'])
 }
 
 function createFruit(fruitObj){
-    console.log(fruitObj)
     var fruit = new fruitsGroup.Sprite();
     fruit.uuid = crypto.randomUUID();
     fruit.diameter = fruitObj.dia * fScale;
@@ -89,7 +88,7 @@ function draw() {
     textSize(32)
     text(playerScore, 25,25)
     if(mouseIsPressed == true) {
-        activeFruit.x = mouseX
+        activeFruit.x = getAllowedXPosition(activeFruit.diameter)
     }
 
 	activeFruit.overlaps(death_wall);
@@ -108,25 +107,18 @@ function draw() {
             console.log(`Game Over - Final Score ${playerScore}`)
         }
 
-        for(var i = 0; i < playedFruits.length; i++){
-            
-            if(fruit.collided(playedFruits[i]) || fruit.colliding(playedFruits[i]) > 10) {
-                if(checkMerge(fruit, playedFruits[i])){
-                    evolveFruit(fruit);
-                    removeFruit(i);
-                }
-            }
-        }
+        fruit.collided(fruitsGroup,checkMergeAndEvolve);
+        fruit.colliding(fruitsGroup, checkMergeAndEvolve);
     }
     )
 }
 
-
-function pleaseWork(e) {
-    console.log(e);
-    console.log("it work")
+function checkMergeAndEvolve(currentFruit, newFruit) {
+    if(checkMerge(currentFruit, newFruit)) {
+        evolveFruit(currentFruit);
+        newFruit.remove();
+    }
 }
-
 
 function evolveFruit(fruit) {
     playerScore += (fruit.points *2)
@@ -152,16 +144,9 @@ function checkMerge(fruit, otherFruit){
     return false;
 }
 
-/*function mouseClicked(event) {
-    console.log(event)
-    wakeFruit()
-    processFruit()
-    sleep(1500).then(()=>{resetFruit();});
-}*/
-
 function touchEnded(event) {
-    console.log(event)
-    wakeFruit()
+    var eventTest = event;
+    wakeFruit(eventTest.x)
     processFruit()
     sleep(1500).then(()=>{resetFruit();});
 }
@@ -171,7 +156,21 @@ function sleep(ms) {
 }
 
 function wakeFruit() {
-    activeFruit.sleeping = false;
+    activeFruit.x = getAllowedXPosition(activeFruit.diameter);
+}
+
+function getAllowedXPosition(fruitDia) {
+    var min_x = mouseX - (fruitDia / 2);
+    var min_a_x = 0.00 + (fruitDia / 2);
+    var max_x = mouseX + (fruitDia / 2);
+    var max_a_x = width - (fruitDia / 2) - 2.5;
+    if (min_x > 2.5 && max_x < width - 2.5) {
+        return mouseX;
+    } else if(min_x < 2.5) {
+        return min_a_x;
+    } else {
+        return max_a_x;
+    }
 }
 
 function processFruit() {
