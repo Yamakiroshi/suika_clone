@@ -1,3 +1,9 @@
+let fruitsGroup;
+let deathGroup;
+
+var height = 0
+var width = 0
+var fScale = 2
 var activeFruit, floor,wall_l, wall_r;
 var playedFruits = []
 var playerScore = 0;
@@ -20,13 +26,18 @@ for (var x in fruitObjs) {
 }
 
 function setup() {
-    createCanvas(400,400)
-    world.gravity.y = 1;
-    activeFruit = createFruit(fruitObjs['cherries'])
+    
+    fruitsGroup = new Group();
+    deathGroup = new Group();
+    height = windowHeight - 100
+    width = (windowWidth / 3) - 100
+    createCanvas(width,height)
+    world.gravity.y = 10;
+    
 
     floor = new Sprite();
-    floor.y = 397.5;
-    floor.w = 400
+    floor.y = height - 5;
+    floor.w = width
     floor.h = 5;
     floor.collider = 'static';
     floor.color = 'black';
@@ -34,32 +45,41 @@ function setup() {
     wall_l = new Sprite();
     wall_l.x=2.5;
     wall_l.w=5;
-    wall_l.h=400;
+    wall_l.h=height;
     wall_l.collider = 'static';
     wall_l.color = 'black;'
     
     wall_r = new Sprite();
-    wall_r.x=397.5;
+    wall_r.x=width - 2.5;
     wall_r.w=5;
-    wall_r.h=400;
+    wall_r.h=height;
     wall_r.collider = 'static'; 
     wall_r.color = 'black';
+
+    death_wall = new Sprite();
+    death_wall.w = width - 10
+    death_wall.h = 5;
+    death_wall.collider = 'static'
+    death_wall.y = 30;
+
+    activeFruit = createFruit(fruitObjs['cherries'])
 }
 
 function createFruit(fruitObj){
     console.log(fruitObj)
-    var fruit = createSprite();
+    var fruit = new fruitsGroup.Sprite();
     fruit.uuid = crypto.randomUUID();
-    fruit.diameter = fruitObj.dia;
-    fruit.y = 30;
+    fruit.diameter = fruitObj.dia * fScale;
+    fruit.y = 75 ;
     fruit.bounciness = 0.2
     fruit.collider = 'dynamic'
-    fruit.velocity.y = 3
+    fruit.velocity.y = 100 * fScale
     fruit.sleeping = true;
     fruit.color = fruitObj.color;
     fruit.points = fruitObj.points;
     fruit.merge = fruitObj.merge;
     fruit.evolve = fruitObj.evolve;
+    fruit.resetMass();
     return fruit;
 }
 
@@ -72,11 +92,22 @@ function draw() {
         activeFruit.x = mouseX
     }
 
+	activeFruit.overlaps(death_wall);
+
+
     playedFruits.forEach(function(fruit){
-    
-        if(fruit.collided(activeFruit) == true) {
-            
+
+        if(fruit.overlapping(death_wall)) {
+            r = random(255); // r is a random number between 0 - 255
+            g = random(255); // g is a random number betwen 100 - 200
+            b = random(255); // b is a random number between 0 - 100
+            death_wall.color = color(r,g,b)
         }
+
+        if(fruit.overlapping(death_wall) > 250) {
+            console.log(`Game Over - Final Score ${playerScore}`)
+        }
+
         for(var i = 0; i < playedFruits.length; i++){
             
             if(fruit.collided(playedFruits[i]) || fruit.colliding(playedFruits[i]) > 10) {
@@ -90,10 +121,17 @@ function draw() {
     )
 }
 
+
+function pleaseWork(e) {
+    console.log(e);
+    console.log("it work")
+}
+
+
 function evolveFruit(fruit) {
     playerScore += (fruit.points *2)
     var newFruit = fruitObjs[fruit.evolve]
-    fruit.diameter = newFruit.dia;
+    fruit.diameter = newFruit.dia * fScale;
     fruit.color = newFruit.color;
     fruit.points = newFruit.points;
     fruit.merge = newFruit.merge;
